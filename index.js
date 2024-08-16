@@ -1,17 +1,29 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+/* eslint-disable no-undef */
+// server.js
+const express = require('express');
+const portfinder = require('portfinder');
+const cors = require('cors');
+const app = express();
+const Users = require('../Modules/User');
+require('../db/connection');
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+app.use(cors());
+app.use(express.json()); // Middleware to parse JSON bodies
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+app.post('/', async (req, res) => {
+  try {
+    const user = new Users(req.body);
+    const result = await user.save();
+    res.status(201).send(result);
+  } catch (err) {
+    res.status(400).send(err);
+  }
+});
+
+portfinder.getPortPromise().then((port) => {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}).catch((err) => {
+  console.error('Error finding port:', err);
+});
